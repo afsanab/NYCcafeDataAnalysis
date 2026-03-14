@@ -1,2 +1,10 @@
-.env
 venv/
+.env
+*.env
+progress_checkpoint.csv
+progress.log
+pyvenv.cfg
+*.pyc
+__pycache__/
+nyc_cafes_enriched.csv
+NYC_Inspection_Data.csv
