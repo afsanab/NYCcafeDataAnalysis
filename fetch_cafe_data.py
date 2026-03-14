@@ -7,9 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv("GOOGLE_PLACES_API_KEY")
 
-INPUT_FILE = "data/DOHMH_New_York_City_Restaurant_Inspection_Results_20260313.csv"
+INPUT_FILE = "DOHMH_New_York_City_Restaurant_Inspection_Results.csv"
 OUTPUT_FILE = "nyc_cafes_enriched.csv"
-PROGRESS_FILE = "progress_checkpoint.csv"
 
 PLACES_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
 PLACES_DETAILS_URL = "https://maps.googleapis.com/maps/api/place/details/json"
@@ -29,19 +28,6 @@ df = df.drop_duplicates(subset="CAMIS", keep="first")
 df = df.reset_index(drop=True)
 print(f"Unique cafes after dedup: {len(df)}")
 
-# --------------------------------------------------------------------------
-# Step 2: Load existing progress if available
-# --------------------------------------------------------------------------
-already_done = set()
-existing_rows = []
-
-if os.path.exists(PROGRESS_FILE):
-    existing = pd.read_csv(PROGRESS_FILE)
-    already_done = set(existing["CAMIS"].astype(str).tolist())
-    existing_rows = existing.to_dict("records")
-    print(f"Resuming from checkpoint — {len(already_done)} cafes already processed")
-else:
-    print("No checkpoint found — starting fresh")
 
 # --------------------------------------------------------------------------
 # Step 3: API functions with retry
@@ -126,9 +112,9 @@ SPECIALTY_KEYWORDS = [
     "single origin", "espresso bar", "micro roast"
 ]
 
-results = list(existing_rows)
 not_found = []
-to_process = df[~df["CAMIS"].astype(str).isin(already_done)]
+results = []
+to_process = df
 
 print(f"Cafes left to process: {len(to_process)}\n")
 
@@ -186,14 +172,9 @@ for i, row in to_process.iterrows():
         results.append(record)
         print(f"  [{global_index}/{len(df)}] {name} ({boro}) — reviews: {details.get('review_count')}, price: {details.get('price_level')}")
 
-    # Save checkpoint every 50 records
-    if len(results) % 50 == 0:
-        pd.DataFrame(results).to_csv(PROGRESS_FILE, index=False)
-
     time.sleep(0.22)
 
-# Final checkpoint save
-pd.DataFrame(results).to_csv(PROGRESS_FILE, index=False)
+
 
 # --------------------------------------------------------------------------
 # Step 5: Calculate demand tiers and pricing power
