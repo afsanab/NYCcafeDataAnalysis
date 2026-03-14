@@ -8,3 +8,10 @@ pyvenv.cfg
 __pycache__/
 nyc_cafes_enriched.csv
 NYC_Inspection_Data.csv
+nyc_cafes_clean.csv
+not_found.csv
+data/
+nyc_cafes_clean.csv
+not_found.csv
+DOHMH_New_York_City_Restaurant_Inspection_Results.csv
+yelp_output.csv
